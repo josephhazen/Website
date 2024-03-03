@@ -7,3 +7,7 @@ variable "s3_name" {
   type = string
   default = "my-website-bucket12345654321"
 }
+
+variable "domain" {
+  default = "horizontech.cloud"
+}
