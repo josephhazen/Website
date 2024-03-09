@@ -127,6 +127,22 @@ resource "aws_s3_bucket" "staticwebsite" {
   }
 }
 
+resource "aws_s3_bucket_policy" "policy" {
+  bucket = aws_s3_bucket.staticwebsite.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Id      = "policy"
+    Statement = [
+      {
+        Sid       = "PublicReadForGetBucketObjects"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = ["s3:GetObject", "s3:DeleteObject", "s3:PutObject", "s3:PutObjectAcl", "s3:GetObjectAcl"]
+        Resource  = "${aws_s3_bucket.staticwebsite.arn}/*"
+      },
+    ]
+  })
+}
 resource "aws_s3_bucket_public_access_block" "block" {
   bucket = aws_s3_bucket.staticwebsite.id
 
@@ -134,19 +150,6 @@ resource "aws_s3_bucket_public_access_block" "block" {
   block_public_policy     = false
   ignore_public_acls      = false
   restrict_public_buckets = false
-}
-
-resource "aws_s3_bucket_website_configuration" "s3config" {
-  bucket = aws_s3_bucket.staticwebsite.bucket
-
-  index_document {
-    suffix = "index.html"
-  }
-
-  error_document {
-    key = "error.html"
-  }
-
 }
 
 #Route53
