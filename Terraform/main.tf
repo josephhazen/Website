@@ -165,6 +165,7 @@ resource "aws_route53_record" "domain-a" {
 }
 
 
+
 #CloudFront
 locals {
   s3_origin_id = "myS3Origin"
