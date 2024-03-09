@@ -137,7 +137,7 @@ resource "aws_s3_bucket_policy" "policy" {
         Sid       = "PublicReadForGetBucketObjects"
         Effect    = "Allow"
         Principal = "*"
-        Action    = ["s3:GetObject", "s3:DeleteObject", "s3:PutObject", "s3:PutObjectAcl", "s3:GetObjectAcl"]
+        Action    = ["s3:PutObject"]
         Resource  = "${aws_s3_bucket.staticwebsite.arn}/*"
       },
     ]

@@ -19,5 +19,3 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
         AWS_REGION: 'us-east-1'
         
-
-        
