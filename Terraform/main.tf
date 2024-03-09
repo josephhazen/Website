@@ -120,37 +120,11 @@ resource "aws_acm_certificate" "cert" {
 #S3 Bucket and ACL
 resource "aws_s3_bucket" "staticwebsite" {
   bucket = var.domain
-    policy = <<POLICY
-{
-  "Version":"2012-10-17",
-  "Statement":[
-    {
-      "Sid":"AddPerm",
-      "Effect":"Allow",
-      "Principal": "*",
-      "Action":["s3:GetObject"],
-      "Resource":["arn:aws:s3:::${var.domain}/*"]
-    }
-  ]
-}
-POLICY
+
   tags = {
     Name        = "Website"
     Environment = "Dev"
   }
-}
-resource "aws_s3_bucket_ownership_controls" "control" {
-  bucket = aws_s3_bucket.staticwebsite.id
-  rule {
-    object_ownership = "BucketOwnerPreferred"
-  }
-}
-
-resource "aws_s3_bucket_acl" "example" {
-  depends_on = [aws_s3_bucket_ownership_controls.control]
-
-  bucket = aws_s3_bucket.staticwebsite.id
-  acl    = "public-read"
 }
 
 resource "aws_s3_bucket_website_configuration" "s3config" {
@@ -181,28 +155,27 @@ resource "aws_route53_record" "domain-a" {
   }
 }
 
+
 #CloudFront
+locals {
+  s3_origin_id = "myS3Origin"
+}
 resource "aws_cloudfront_distribution" "webcdn" {
   aliases = [ var.domain ]
   enabled = true
   default_root_object = "index.html"
+  is_ipv6_enabled     = true
   
   origin {
-    origin_id                = var.domain
+    origin_id                = local.s3_origin_id
     domain_name              = aws_s3_bucket.staticwebsite.bucket_regional_domain_name
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols   = ["TLSv1"]
-    }
   }
 
   default_cache_behavior {
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
-    target_origin_id = var.domain
-    allowed_methods  = ["GET", "HEAD"]
+    target_origin_id = local.s3_origin_id
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
 
     forwarded_values {
@@ -224,7 +197,8 @@ resource "aws_cloudfront_distribution" "webcdn" {
   }
   
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = aws_acm_certificate.cert.arn
+    ssl_support_method  = "sni-only"
   }
 
   price_class = "PriceClass_200"
