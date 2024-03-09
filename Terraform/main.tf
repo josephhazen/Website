@@ -152,6 +152,14 @@ resource "aws_s3_bucket_public_access_block" "block" {
   restrict_public_buckets = false
 }
 
+resource "aws_s3_bucket_ownership_controls" "ownership" {
+  bucket = aws_s3_bucket.staticwebsite.id
+
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
 #Route53
 resource "aws_route53_zone" "primary" {
   name = var.domain
