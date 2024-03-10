@@ -140,6 +140,20 @@ resource "aws_s3_bucket_policy" "policy" {
         Action    = ["s3:PutObject"]
         Resource  = "${aws_s3_bucket.staticwebsite.arn}/*"
       },
+      {
+        Sid       = "AllowCloudFrontServicePrincipalReadOnly"
+        Effect    = "Allow"
+        Principal = {
+            "Service": "cloudfront.amazonaws.com"
+        },
+        Action    = ["s3:GetObject"]
+        Resource  = "${aws_s3_bucket.staticwebsite.arn}/*"
+        Condition = {
+            "StringEquals": {
+                "AWS:SourceArn" = aws_cloudfront_distribution.webcdn.arn
+            }
+        }
+      }
     ]
   })
 }
@@ -156,7 +170,7 @@ resource "aws_s3_bucket_ownership_controls" "ownership" {
   bucket = aws_s3_bucket.staticwebsite.id
 
   rule {
-    object_ownership = "ObjectWriter"
+    object_ownership = "BucketOwnerPreferred"
   }
 }
 
@@ -175,8 +189,6 @@ resource "aws_route53_record" "domain-a" {
   }
 }
 
-
-
 #CloudFront
 locals {
   s3_origin_id = "myS3Origin"
@@ -186,7 +198,6 @@ resource "aws_cloudfront_distribution" "webcdn" {
   enabled = true
   default_root_object = "index.html"
   is_ipv6_enabled     = true
-  
   origin {
     origin_id                = local.s3_origin_id
     domain_name              = aws_s3_bucket.staticwebsite.bucket_regional_domain_name
@@ -222,6 +233,6 @@ resource "aws_cloudfront_distribution" "webcdn" {
     ssl_support_method  = "sni-only"
   }
 
-  price_class = "PriceClass_200"
+  price_class = "PriceClass_100"
   
 }
