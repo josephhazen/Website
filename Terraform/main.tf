@@ -200,7 +200,8 @@ resource "aws_cloudfront_distribution" "webcdn" {
   is_ipv6_enabled     = true
   origin {
     origin_id                = local.s3_origin_id
-    domain_name              = aws_s3_bucket.staticwebsite.bucket_regional_domain_name
+    domain_name              = aws_s3_bucket.staticwebsite.bucket_domain_name
+    origin_path = "/Frontend"
   }
 
   default_cache_behavior {
