@@ -165,25 +165,6 @@ resource "aws_iam_role" "iam_for_lambda" {
   name               = "iam_for_lambda"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
-#API GATEWAY
-resource "aws_apigatewayv2_api" "api" {
-  name          = "http-api"
-  protocol_type = "HTTP"
-  target = aws_lambda_function.lambda.id
-}
-resource "aws_apigatewayv2_route" "route" {
-  api_id    = aws_apigatewayv2_api.api.id
-  route_key = "POST /resume/resume.html"
-  target    = aws_apigatewayv2_integration.integration.id
-}
-resource "aws_apigatewayv2_integration" "integration" {
-  api_id           = aws_apigatewayv2_api.api.id
-  integration_type = "AWS_PROXY"
-
-  description               = "Lambda API"
-  integration_method        = "POST"
-  integration_uri           = aws_lambda_function.lambda.invoke_arn
-}
 #LAMBDA FUNCTION
 resource "aws_lambda_function" "lambda" {
   # If the file is not in the current working directory you will need to include a
@@ -191,8 +172,8 @@ resource "aws_lambda_function" "lambda" {
   filename      = "${path.module}/../Backend/api.zip"
   function_name = "http_request_IP-DB"
   role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "lambda_function.lambda_handler"
-  runtime = "python3.9"
+  handler       = "api.lambda_handler"
+  runtime       = "python3.9"
 }
 #DYNAMODB
 resource "aws_dynamodb_table" "db" {
@@ -205,16 +186,33 @@ resource "aws_dynamodb_table" "db" {
     type = "B"
   }
 
-  ttl {
-    attribute_name = "TimeToExist"
-    enabled        = false
-  }
-
   tags = {
     Name        = "dynamodb-table"
     Environment = "dev"
   }
 }
+#API GATEWAY
+resource "aws_apigatewayv2_api" "api" {
+  name          = "api"
+  protocol_type = "HTTP"
+}
+resource "aws_apigatewayv2_route" "route" {
+  api_id    = aws_apigatewayv2_api.api.id
+  route_key = "POST /resume"
+  target    = "integrations/${aws_apigatewayv2_integration.integration.id}"
+}
+resource "aws_apigatewayv2_integration" "integration" {
+  api_id           = aws_apigatewayv2_api.api.id
+  integration_type = "AWS_PROXY"
+  description               = "Lambda API"
+  integration_method        = "POST"
+  integration_uri           = aws_lambda_function.lambda.invoke_arn
+}
+resource "aws_apigatewayv2_stage" "stage" {
+  api_id = aws_apigatewayv2_api.api.id
+  name   = "stage"
+}
+
 #CLOUDVISION
 
 #SNS
