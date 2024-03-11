@@ -174,7 +174,7 @@ resource "aws_apigatewayv2_route" "route" {
   api_id    = aws_apigatewayv2_api.api.id
   route_key = "GET /resume/resume.html"
 }
-resource "aws_apigatewayv2_integration" "example" {
+resource "aws_apigatewayv2_integration" "integration" {
   api_id           = aws_apigatewayv2_api.example.id
   integration_type = "HTTP"
 
