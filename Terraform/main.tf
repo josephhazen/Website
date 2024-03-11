@@ -177,7 +177,7 @@ resource "aws_apigatewayv2_route" "route" {
   target    = aws_apigatewayv2_integration.integration.id
 }
 resource "aws_apigatewayv2_integration" "integration" {
-  api_id           = aws_apigatewayv2_api.example.id
+  api_id           = aws_apigatewayv2_api.api.id
   integration_type = "AWS_PROXY"
 
   description               = "Lambda API"
