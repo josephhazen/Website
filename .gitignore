@@ -3,3 +3,5 @@
 /Terraform/terraform.tfstate
 /Terraform/terraform.tfstate.backup
 /Terraform/.terraform.lock.hcl
+/Terraform/variables.tf
+/Terraform/output.tf

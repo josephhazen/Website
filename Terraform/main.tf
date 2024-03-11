@@ -13,96 +13,6 @@ provider "aws" {
   profile = "sso-dev"
 }
 
-
-# Create a VPC
-resource "aws_vpc" "myfirstvpc" {
-  cidr_block = "10.0.0.0/16"
-}
-
-#Create a subnet
-resource "aws_subnet" "myfirstsubnet" {
-  vpc_id     = aws_vpc.myfirstvpc.id
-  cidr_block = "10.0.1.0/24"
-  availability_zone = "us-east-1a"
-
-  tags = {
-    Name = "first"
-  }
-}
-#internet gateway
-resource "aws_internet_gateway" "myfirstgateway" {
-  vpc_id = aws_vpc.myfirstvpc.id
-
-  tags = {
-    Name = "first"
-  }
-}
-
-#associate route table to subnet
-resource "aws_route_table_association" "a" {
-  subnet_id = aws_subnet.myfirstsubnet.id
-  route_table_id = aws_route_table.myfirstroutettable.id
-}
-
-#ec2 instance security group
-resource "aws_security_group" "allow" {
-  name        = "allow"
-  description = "Allow inbound traffic"
-  vpc_id      = aws_vpc.myfirstvpc.id
-
-  ingress {
-    description = "ssh from VPC"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "allow_ssh"
-  }
-}
-
-#network interface
-resource "aws_network_interface" "foo" {
-  subnet_id   = aws_subnet.myfirstsubnet.id
-  private_ips = ["10.0.1.100"]
-  security_groups = [aws_security_group.allow.id]
-
-
-}
-
-
-#route table
-resource "aws_route_table" "myfirstroutettable" {
-  vpc_id = aws_vpc.myfirstvpc.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.myfirstgateway.id
-  }
-
-  tags = {
-    Name = "first"
-  }
-}
-
-
-#elastic ip
-resource "aws_eip" "firsteip" {
-  vpc = true
-  network_interface = aws_network_interface.foo.id
-  associate_with_private_ip = "10.0.1.100"
-  depends_on = [ aws_internet_gateway.myfirstgateway ]
-}
-
 #request certificate
 resource "aws_acm_certificate" "cert" {
   domain_name       = var.domain
@@ -237,3 +147,89 @@ resource "aws_cloudfront_distribution" "webcdn" {
   price_class = "PriceClass_100"
   
 }
+#IAM
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "iam_for_lambda" {
+  name               = "iam_for_lambda"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+#API GATEWAY
+resource "aws_apigatewayv2_api" "api" {
+  name          = "http-api"
+  protocol_type = "HTTP"
+}
+resource "aws_apigatewayv2_route" "route" {
+  api_id    = aws_apigatewayv2_api.api.id
+  route_key = "GET /resume/resume.html"
+}
+resource "aws_apigatewayv2_integration" "example" {
+  api_id           = aws_apigatewayv2_api.example.id
+  integration_type = "HTTP"
+
+  content_handling_strategy = "CONVERT_TO_BINARY"
+  description               = "Lambda API"
+  integration_method        = "POST"
+  integration_uri           = aws_lambda_function.lambda.invoke_arn
+  passthrough_behavior      = "WHEN_NO_MATCH"
+}
+#LAMBDA FUNCTION
+data "archive_file" "lambda" {
+  type        = "zip"
+  source_file = "api.py"
+  output_path = "lambda_function_payload.zip"
+}
+
+resource "aws_lambda_function" "lambda" {
+  # If the file is not in the current working directory you will need to include a
+  # path.module in the filename.
+  filename      = "lambda_function_payload.zip"
+  function_name = "http_request_IP-DB"
+  role          = aws_iam_role.iam_for_lambda.arn
+  handler       = "index.test"
+
+  source_code_hash = data.archive_file.lambda.output_base64sha256
+
+  runtime = "python3.12"
+
+  environment {
+    variables = {
+      foo = "bar"
+    }
+  }
+}
+#DYNAMODB
+resource "aws_dynamodb_table" "db" {
+  name           = "Visitors"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "VisitorIP"
+
+  attribute {
+    name = "VisitorIP"
+    type = "B"
+  }
+
+  ttl {
+    attribute_name = "TimeToExist"
+    enabled        = false
+  }
+
+  tags = {
+    Name        = "dynamodb-table"
+    Environment = "dev"
+  }
+}
+#CLOUDVISION
+
+#SNS
