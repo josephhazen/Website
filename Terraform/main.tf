@@ -198,7 +198,7 @@ resource "aws_apigatewayv2_api" "api" {
 }
 resource "aws_apigatewayv2_route" "route" {
   api_id    = aws_apigatewayv2_api.api.id
-  route_key = "POST /resume"
+  route_key = "ANY /resume"
   target    = "integrations/${aws_apigatewayv2_integration.integration.id}"
 }
 resource "aws_apigatewayv2_integration" "integration" {
