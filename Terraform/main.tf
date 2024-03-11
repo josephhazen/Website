@@ -169,54 +169,39 @@ resource "aws_iam_role" "iam_for_lambda" {
 resource "aws_apigatewayv2_api" "api" {
   name          = "http-api"
   protocol_type = "HTTP"
+  target = aws_lambda_function.lambda.id
 }
 resource "aws_apigatewayv2_route" "route" {
   api_id    = aws_apigatewayv2_api.api.id
-  route_key = "GET /resume/resume.html"
+  route_key = "POST /resume/resume.html"
+  target    = aws_apigatewayv2_integration.integration.id
 }
 resource "aws_apigatewayv2_integration" "integration" {
   api_id           = aws_apigatewayv2_api.example.id
-  integration_type = "HTTP"
+  integration_type = "AWS_PROXY"
 
-  content_handling_strategy = "CONVERT_TO_BINARY"
   description               = "Lambda API"
   integration_method        = "POST"
   integration_uri           = aws_lambda_function.lambda.invoke_arn
-  passthrough_behavior      = "WHEN_NO_MATCH"
 }
 #LAMBDA FUNCTION
-data "archive_file" "lambda" {
-  type        = "zip"
-  source_file = "api.py"
-  output_path = "lambda_function_payload.zip"
-}
-
 resource "aws_lambda_function" "lambda" {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
-  filename      = "lambda_function_payload.zip"
+  filename      = "${path.module}/../Backend/api.py"
   function_name = "http_request_IP-DB"
   role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "index.test"
-
-  source_code_hash = data.archive_file.lambda.output_base64sha256
-
-  runtime = "python3.12"
-
-  environment {
-    variables = {
-      foo = "bar"
-    }
-  }
+  handler       = "lambda_function.lambda_handler"
+  runtime = "python3.9"
 }
 #DYNAMODB
 resource "aws_dynamodb_table" "db" {
   name           = "Visitors"
   billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "VisitorIP"
+  hash_key       = "ip_address"
 
   attribute {
-    name = "VisitorIP"
+    name = "ip_address"
     type = "B"
   }
 
