@@ -169,7 +169,7 @@ resource "aws_iam_role" "iam_for_lambda" {
 resource "aws_lambda_function" "lambda" {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
-  filename      = "${path.module}/../Backend/api.zip"
+  filename      = "${path.module}/../Backend/apilambda.zip"
   function_name = "http_request_IP-DB"
   role          = aws_iam_role.iam_for_lambda.arn
   handler       = "api.lambda_handler"
@@ -179,10 +179,10 @@ resource "aws_lambda_function" "lambda" {
 resource "aws_dynamodb_table" "db" {
   name           = "resume_visitors"
   billing_mode   = "PAY_PER_REQUEST"
-  hash_key = "count"
+  hash_key = "visitorcount"
 
   attribute {
-    name = "count"
+    name = "visitorcount"
     type = "N"
   }
 
