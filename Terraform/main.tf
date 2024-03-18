@@ -212,12 +212,21 @@ resource "aws_dynamodb_table" "db" {
     name = "visitorcount"
     type = "S"
   }
-
   tags = {
     Name        = "dynamodb-table"
     Environment = "dev"
   }
 }
+resource "aws_dynamodb_table_item" "tableitem" {
+  table_name = aws_dynamodb_table.db.name
+  hash_key   = aws_dynamodb_table.db.hash_key
+
+  item = jsonencode({
+  "visitorcount": {"S" : "visitor-count"},
+  "visitorvalue": {"N" : "0"}
+  })
+  }
+
 #API GATEWAY
 resource "aws_apigatewayv2_api" "api" {
   name          = "api"

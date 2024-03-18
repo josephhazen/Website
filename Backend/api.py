@@ -7,13 +7,13 @@ table = dynamodb.Table(table_name)
 
 def lambda_handler(event, context):
    response = table.update_item(
-      Key={
-         'visitorcount': '0'
-         },
+      Key = {
+         'visitorcount': {'S': 'visitorvalue'}
+      },
       UpdateExpression='ADD visitorcount :val',
       ExpressionAttributeValues={
          ':val': 1
-         },
+      },
       ReturnValues='UPDATED_NEW'
    )
     #Return the value
