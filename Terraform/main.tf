@@ -210,7 +210,7 @@ resource "aws_dynamodb_table" "db" {
 
   attribute {
     name = "visitorcount"
-    type = "N"
+    type = "S"
   }
 
   tags = {
