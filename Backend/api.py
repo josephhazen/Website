@@ -8,16 +8,16 @@ table = dynamodb.Table(table_name)
 def lambda_handler(event, context):
    response = table.update_item(
       Key={
-         'count': '0'
+         'visitorcount': '0'
          },
-      UpdateExpression='ADD count :val',
+      UpdateExpression='ADD visitorcount :val',
       ExpressionAttributeValues={
          ':val': 1
          },
       ReturnValues='UPDATED_NEW'
    )
     #Return the value
-   value = response['Attributes']['count']['N']
+   value = response['Attributes']['visitorcount']['N']
    return {      
             'statusCode': 200,
             'body': value}
