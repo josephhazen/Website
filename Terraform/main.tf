@@ -162,7 +162,7 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 resource "aws_iam_role" "role" {
-  name               = "lambda role"
+  name               = "lambda"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
@@ -183,7 +183,7 @@ data "aws_iam_policy_document" "policydoc" {
 }
 
 resource "aws_iam_policy" "policy" {
-  name        = "lambda policy"
+  name        = "lambda_policy"
   description = "Assume role policy"
   policy      = data.aws_iam_policy_document.policydoc.json
 }
