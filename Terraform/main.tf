@@ -177,13 +177,13 @@ resource "aws_lambda_function" "lambda" {
 }
 #DYNAMODB
 resource "aws_dynamodb_table" "db" {
-  name           = "Visitors"
+  name           = "resume_visitors"
   billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "ip_address"
+  hash_key = "visitors"
 
   attribute {
-    name = "ip_address"
-    type = "B"
+    name = "count"
+    type = "N"
   }
 
   tags = {
