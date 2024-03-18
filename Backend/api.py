@@ -12,7 +12,8 @@ def lambda_handler(event, context):
          Key={
             'count'
          }
-         UpdateExpression= 'ADD Value:1'
+         UpdateExpression= 'ADD count :val',
+         ExpressionAttributeValues = {":val" : {"N": "1"}},
          ReturnValues = 'UPDATED_NEW'
     )
 
