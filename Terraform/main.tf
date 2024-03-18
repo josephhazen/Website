@@ -179,7 +179,7 @@ resource "aws_lambda_function" "lambda" {
 resource "aws_dynamodb_table" "db" {
   name           = "resume_visitors"
   billing_mode   = "PAY_PER_REQUEST"
-  hash_key = "visitors"
+  hash_key = "count"
 
   attribute {
     name = "count"

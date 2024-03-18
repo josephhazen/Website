@@ -10,7 +10,7 @@ def lambda_handler(event, context):
     #Update the count
     response = table.update_item(
          Key={
-            'visitors': {'N': 'count'}
+            'count'
          }
          UpdateExpression= 'ADD Value:1'
          ReturnValues = 'UPDATED_NEW'
