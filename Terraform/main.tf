@@ -148,13 +148,28 @@ resource "aws_cloudfront_distribution" "webcdn" {
   
 }
 #IAM
-resource "aws_iam_role" "lambda_role" {
-  name = "lambda_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "role" {
+  name               = "lambda role"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+data "aws_iam_policy_document" "policydoc" {
+  statement {
+    effect    = "Allow"
+    actions   = [
 				"dynamodb:BatchGetItem",
 				"dynamodb:GetItem",
 				"dynamodb:Query",
@@ -162,19 +177,20 @@ resource "aws_iam_role" "lambda_role" {
 				"dynamodb:BatchWriteItem",
 				"dynamodb:PutItem",
 				"dynamodb:UpdateItem"
-			],
-        Effect = "Allow"
-        Sid    = "AssumeRoleDDB"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      },
-    ]
-  })
-
-  tags = {
-    tag-key = "tag-value"
+			]
+    resources = ["*"]
   }
+}
+
+resource "aws_iam_policy" "policy" {
+  name        = "lambda policy"
+  description = "Assume role policy"
+  policy      = data.aws_iam_policy_document.policydoc.json
+}
+
+resource "aws_iam_role_policy_attachment" "attach" {
+  role       = aws_iam_role.role.name
+  policy_arn = aws_iam_policy.policy.arn
 }
 #LAMBDA FUNCTION
 resource "aws_lambda_function" "lambda" {
@@ -182,7 +198,7 @@ resource "aws_lambda_function" "lambda" {
   # path.module in the filename.
   filename      = "${path.module}/../Backend/api.zip"
   function_name = "http_request_IP-DB"
-  role          = aws_iam_role.lambda_role.arn
+  role          = aws_iam_role.role.arn
   handler       = "api.lambda_handler"
   runtime       = "python3.9"
 }
