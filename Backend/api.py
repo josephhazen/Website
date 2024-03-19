@@ -2,22 +2,22 @@ import boto3
 import json
 
 table_name = 'resume_visitors'
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table(table_name)
+dynamodb = boto3.client('dynamodb')
 
 def lambda_handler(event, context):
-   response = table.update_item(
-      Key = {
-         'visitorcount': {'S': 'visitorvalue'}
+   response = dynamodb.update_item(
+      TableName=table_name,
+      Key={
+         'visitorcount': {'S': 'visitor-count'}
       },
-      UpdateExpression='ADD visitorcount :val',
+      UpdateExpression='ADD visitorvalue :val',
       ExpressionAttributeValues={
-         ':val': 1
+         ":val" : {"N": "1"}
       },
       ReturnValues='UPDATED_NEW'
    )
     #Return the value
-   value = response['Attributes']['visitorcount']['N']
+   value = response['Attributes']['visitorvalue']['N']
    return {      
             'statusCode': 200,
             'body': value}
