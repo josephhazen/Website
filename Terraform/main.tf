@@ -225,16 +225,23 @@ resource "aws_dynamodb_table_item" "tableitem" {
   "visitorcount": {"S" : "visitor-count"},
   "visitorvalue": {"N" : "0"}
   })
+
+  lifecycle {
+    ignore_changes = [
+      item
+    ]
   }
+}
 
 #API GATEWAY
 resource "aws_apigatewayv2_api" "api" {
   name          = "api"
   protocol_type = "HTTP"
+
 }
 resource "aws_apigatewayv2_route" "route" {
   api_id    = aws_apigatewayv2_api.api.id
-  route_key = "ANY /resume"
+  route_key = "GET /resume/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.integration.id}"
 }
 resource "aws_apigatewayv2_integration" "integration" {
@@ -247,6 +254,14 @@ resource "aws_apigatewayv2_integration" "integration" {
 resource "aws_apigatewayv2_stage" "stage" {
   api_id = aws_apigatewayv2_api.api.id
   name   = "stage"
+}
+resource "aws_apigatewayv2_deployment" "deployment" {
+  api_id      = aws_apigatewayv2_api.api.id
+  description = "resume counter deployment"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 #CLOUDVISION
