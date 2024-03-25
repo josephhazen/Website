@@ -44,9 +44,11 @@ resource "aws_s3_bucket_policy" "policy" {
     Id      = "policy"
     Statement = [
       {
-        Sid       = "PublicReadForGetBucketObjects"
+        Sid       = "GithubActionsPutObject"
         Effect    = "Allow"
-        Principal = "*"
+        Principal = {
+          "AWS": "${var.iam_admin_arn}"
+        },
         Action    = ["s3:PutObject"]
         Resource  = "${aws_s3_bucket.staticwebsite.arn}/*"
       },
@@ -147,7 +149,7 @@ resource "aws_cloudfront_distribution" "webcdn" {
   price_class = "PriceClass_100"
   
 }
-#IAM
+#IAM for Lambda
 data "aws_iam_policy_document" "assume_role" {
   statement {
     effect = "Allow"
@@ -202,6 +204,12 @@ resource "aws_lambda_function" "lambda" {
   handler       = "api.lambda_handler"
   runtime       = "python3.9"
 }
+resource "aws_lambda_permission" "trigger" {
+  statement_id  = "AllowExecutionFromAPI"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+}
 #DYNAMODB
 resource "aws_dynamodb_table" "db" {
   name           = "resume_visitors"
@@ -234,34 +242,52 @@ resource "aws_dynamodb_table_item" "tableitem" {
 }
 
 #API GATEWAY
-resource "aws_apigatewayv2_api" "api" {
-  name          = "api"
-  protocol_type = "HTTP"
+resource "aws_api_gateway_rest_api" "api" {
+  name = "ExampleAPIGateway"
+}
 
+resource "aws_api_gateway_resource" "resource" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
+  path_part   = "{resume+}"
 }
-resource "aws_apigatewayv2_route" "route" {
-  api_id    = aws_apigatewayv2_api.api.id
-  route_key = "GET /resume/{proxy+}"
-  target    = "integrations/${aws_apigatewayv2_integration.integration.id}"
-}
-resource "aws_apigatewayv2_integration" "integration" {
-  api_id           = aws_apigatewayv2_api.api.id
-  integration_type = "AWS_PROXY"
-  description               = "Lambda API"
-  integration_method        = "POST"
-  integration_uri           = aws_lambda_function.lambda.invoke_arn
-}
-resource "aws_apigatewayv2_stage" "stage" {
-  api_id = aws_apigatewayv2_api.api.id
-  name   = "stage"
-}
-resource "aws_apigatewayv2_deployment" "deployment" {
-  api_id      = aws_apigatewayv2_api.api.id
-  description = "resume counter deployment"
 
-  lifecycle {
-    create_before_destroy = true
-  }
+resource "aws_api_gateway_method" "method" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.resource.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.resource.id
+  http_method             = aws_api_gateway_method.method.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.lambda.invoke_arn
+}
+
+resource "aws_api_gateway_method_response" "methodresponse" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.resource.id
+  http_method = aws_api_gateway_method.method.http_method
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "integrationresponse" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.resource.id
+  http_method = aws_api_gateway_method.method.http_method
+  status_code = aws_api_gateway_method_response.methodresponse.status_code
+}
+resource "aws_api_gateway_deployment" "deployment" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+}
+resource "aws_api_gateway_stage" "stage" {
+  stage_name = "apiv1"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  deployment_id = aws_api_gateway_deployment.deployment.id
 }
 
 #CLOUDVISION

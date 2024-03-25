@@ -11,3 +11,8 @@ variable "s3_name" {
 variable "domain" {
   default = "horizontech.cloud"
 }
+
+variable "iam_admin_arn" {
+  type = string
+  default = "836377050370"
+}
