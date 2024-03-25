@@ -14,5 +14,5 @@ variable "domain" {
 
 variable "iam_admin_arn" {
   type = string
-  default = "836377050370"
+  default = "arn:aws:iam::836377050370:user/iamadmindevelopment"
 }
