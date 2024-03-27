@@ -299,4 +299,4 @@ module "creator_cors" {
 
 #CLOUDWATCH
 
-#SNS
+#SNS TOPIC
