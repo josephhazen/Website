@@ -274,6 +274,9 @@ resource "aws_api_gateway_method_response" "methodresponse" {
   resource_id = aws_api_gateway_resource.resource.id
   http_method = aws_api_gateway_method.method.http_method
   status_code = "200"
+    lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_api_gateway_integration_response" "integrationresponse" {
@@ -281,7 +284,11 @@ resource "aws_api_gateway_integration_response" "integrationresponse" {
   resource_id = aws_api_gateway_resource.resource.id
   http_method = aws_api_gateway_method.method.http_method
   status_code = aws_api_gateway_method_response.methodresponse.status_code
+    lifecycle {
+    ignore_changes = all
+  }
 }
+
 resource "aws_api_gateway_deployment" "deployment" {
   rest_api_id = aws_api_gateway_rest_api.api.id
 }
@@ -290,12 +297,7 @@ resource "aws_api_gateway_stage" "stage" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   deployment_id = aws_api_gateway_deployment.deployment.id
 }
-module "creator_cors" { 
-  source = "squidfunk/api-gateway-enable-cors/aws"
-  version = "0.3.3"
-  api_id = aws_api_gateway_rest_api.api.id
-  api_resource_id = aws_api_gateway_resource.resource.id
-}
+
 
 #CLOUDWATCH
 
