@@ -13,3 +13,9 @@ html {
     margin-bottom: 50px;
   }
 
+#visitors {
+    text-align: right;
+    font-size: 14px;
+    color: #fdb44b
+}
+

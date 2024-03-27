@@ -250,6 +250,7 @@ resource "aws_api_gateway_resource" "resource" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   parent_id   = aws_api_gateway_rest_api.api.root_resource_id
   path_part   = "{resume+}"
+  
 }
 
 resource "aws_api_gateway_method" "method" {
@@ -289,7 +290,13 @@ resource "aws_api_gateway_stage" "stage" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   deployment_id = aws_api_gateway_deployment.deployment.id
 }
+module "creator_cors" { 
+  source = "squidfunk/api-gateway-enable-cors/aws"
+  version = "0.3.3"
+  api_id = aws_api_gateway_rest_api.api.id
+  api_resource_id = aws_api_gateway_resource.resource.id
+}
 
-#CLOUDVISION
+#CLOUDWATCH
 
 #SNS
