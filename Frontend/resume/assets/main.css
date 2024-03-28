@@ -13,9 +13,10 @@ html {
     margin-bottom: 50px;
   }
 
-#visitors {
+#api-content {
     text-align: right;
-    font-size: 14px;
-    color: #fdb44b
+    font-size: 16px;
+    color: #f08c00
 }
+
 
