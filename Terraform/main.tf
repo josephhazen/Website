@@ -100,6 +100,13 @@ resource "aws_route53_record" "domain-a" {
     evaluate_target_health = false
   }
 }
+resource "aws_route53_record" "blog" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "blog"
+  type    = "A"
+  ttl     = 300
+  records = [aws_eip.eip.public_ip]
+}
 
 #CloudFront
 locals {
@@ -297,8 +304,97 @@ resource "aws_api_gateway_stage" "stage" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   deployment_id = aws_api_gateway_deployment.deployment.id
 }
+#Network Topology for EC2
+resource "aws_vpc" "vpc" {
+  cidr_block = "10.40.0.0/16"
+}
+resource "aws_subnet" "web" {
+  vpc_id     = aws_vpc.vpc.id
+  cidr_block = "10.40.1.0/24"
 
+  tags = {
+    Name = "Web_Blog"
+  }
+}
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.vpc.id
+}
+resource "aws_eip" "eip" {
+   vpc                       = true
+   network_interface         = aws_network_interface.int.id
+   associate_with_private_ip = "10.40.1.20"
+   depends_on                = [aws_internet_gateway.gw]
+ }
+resource "aws_route_table" "table" {
+  vpc_id = aws_vpc.vpc.id
 
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.gw.id
+  }
+  tags = {
+    Name = "default_route"
+  }
+}
+resource "aws_route_table_association" "a" {
+  subnet_id      = aws_subnet.web.id
+  route_table_id = aws_route_table.table.id
+}
+resource "aws_network_interface" "int" {
+  subnet_id = aws_subnet.web.id
+  private_ips = [ "10.40.1.20" ]
+  security_groups = [ aws_security_group.allow_web.id ]
+}
+#EC2
+resource "aws_instance" "wordpress" {
+  ami           = "ami-0718d0184bb97ab77"
+  instance_type = "t2.micro"
+
+  key_name = "test"
+
+  network_interface {
+     device_index         = 0
+     network_interface_id = aws_network_interface.int.id
+   }
+   tags = {
+     Name = "blog"
+   }
+}
+#Security Group
+ resource "aws_security_group" "allow_web" {
+   name        = "allow_web_traffic"
+   description = "Allow Web inbound traffic"
+   vpc_id      = aws_vpc.vpc.id
+
+   ingress {
+     description = "HTTPS"
+     from_port   = 443
+     to_port     = 443
+     protocol    = "tcp"
+     cidr_blocks = ["0.0.0.0/0"]
+   }
+   ingress {
+     description = "HTTP"
+     from_port   = 80
+     to_port     = 80
+     protocol    = "tcp"
+     cidr_blocks = ["0.0.0.0/0"]
+   }
+   ingress {
+     description = "SSH"
+     from_port   = 22
+     to_port     = 22
+     protocol    = "tcp"
+     cidr_blocks = ["0.0.0.0/0"]
+   }
+
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+     cidr_blocks = ["0.0.0.0/0"]
+   }
+ }
 #CLOUDWATCH
 
 #SNS TOPIC
