@@ -121,7 +121,7 @@ resource "aws_cloudfront_distribution" "webcdn" {
     compress               = true
     target_origin_id = local.s3_origin_id
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods   = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD", "OPTIONS"]
 
     forwarded_values {
       query_string = true

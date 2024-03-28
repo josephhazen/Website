@@ -5,3 +5,5 @@
 /Terraform/.terraform.lock.hcl
 /Terraform/variables.tf
 /Terraform/output.tf
+/cypress/*
+cypress.config.js
