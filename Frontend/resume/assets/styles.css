@@ -5,7 +5,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: #f3f3f3; /* Light gray background */
+    background-color: #f3f3f3;
   }
   
   .resume {
@@ -15,14 +15,14 @@ body {
   
   .sidebar,
   .right-margin {
-    color: #de703c; /* Orange text */
+    color: #de703c;
     font-family: "Roboto", sans-serif;
   }
   
   .sidebar {
     padding: 20px;
-    background-color: #2f3c4f; /* Dark blue background */
-    width: 250px;
+    background-color: #2f3c4f;
+    width: 300px;
   }
   
   .contact-sidebar,
@@ -50,8 +50,8 @@ body {
   
   .right-margin {
     padding: 20px;
-    background-color: #2f3c4f; /* Dark blue background */
-    width: 250px;
+    background-color: #2f3c4f;
+    width: 300px;
     right: 0;
   }
   
@@ -76,42 +76,50 @@ body {
   .main-content {
     flex: 1;
     padding: 20px;
-    background-color: #506f86; /* Medium blue background */
-    color: #fbb040; /* Yellow text */
+    background-color: #f9f9f9;
+    color: #fbb040;
     text-align: center;
     font-family: "Roboto", sans-serif;
   }
   
   .header {
-    color: #de703c; /* Yellow text */
+    color: #41340C;
   }
 
   .experience {
-    color: #de703c;
+    color: #41340C;
     text-align: center;
     margin-left: 60;
     margin-right: 60;
   }
 
   .experience ul li {
-    color: #fbb040; 
+    color: #240C41; 
     line-height: 2;
     text-align: left;
   }
 
   .experience p {
-    color: #fbb040; 
+    color: #240C41; 
     line-height: 2;
     text-align: left;
   }
 
-  .profile-picture {
+  .profile-picture img {
     width: 150px;
     height: 150px;
     border-radius: 50%;
-    background-color: #ccc;
-    margin-bottom: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
 
+a:link {
+  color: #fbb040;
+}
+
+a:visited {
+  color: #fbb040;
+}
 
   
