@@ -1,0 +1,117 @@
+body {
+    font-family: "Arial", sans-serif; 
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f3f3f3; /* Light gray background */
+  }
+  
+  .resume {
+    flex-grow: 1;
+    display: flex;
+  }
+  
+  .sidebar,
+  .right-margin {
+    color: #de703c; /* Orange text */
+    font-family: "Roboto", sans-serif;
+  }
+  
+  .sidebar {
+    padding: 20px;
+    background-color: #2f3c4f; /* Dark blue background */
+    width: 250px;
+  }
+  
+  .contact-sidebar,
+  .education {
+    margin-bottom: 20px;
+  }
+  
+  .contact-sidebar h2,
+  .education h2 {
+    margin-top: 0;
+  }
+  
+  .contact-sidebar ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .contact-sidebar ul li {
+    margin-bottom: 10px;
+  }
+  
+  .contact-sidebar ul li:last-child {
+    margin-bottom: 0;
+  }
+  
+  .right-margin {
+    padding: 20px;
+    background-color: #2f3c4f; /* Dark blue background */
+    width: 250px;
+    right: 0;
+  }
+  
+  .skills h2,
+  .visitor-counter h2 {
+    margin-top: 0;
+  }
+  
+  .skills ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .skills ul li {
+    margin-bottom: 10px;
+  }
+  
+  .skills ul li:last-child {
+    margin-bottom: 0;
+  }
+  
+  .main-content {
+    flex: 1;
+    padding: 20px;
+    background-color: #506f86; /* Medium blue background */
+    color: #fbb040; /* Yellow text */
+    text-align: center;
+    font-family: "Roboto", sans-serif;
+  }
+  
+  .header {
+    color: #de703c; /* Yellow text */
+  }
+
+  .experience {
+    color: #de703c;
+    text-align: center;
+    margin-left: 60;
+    margin-right: 60;
+  }
+
+  .experience ul li {
+    color: #fbb040; 
+    line-height: 2;
+    text-align: left;
+  }
+
+  .experience p {
+    color: #fbb040; 
+    line-height: 2;
+    text-align: left;
+  }
+
+  .profile-picture {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #ccc;
+    margin-bottom: 20px;
+  }
+
+
+  
