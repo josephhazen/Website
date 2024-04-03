@@ -7,3 +7,4 @@
 /Terraform/output.tf
 /cypress/*
 cypress.config.js
+Terraform/variables.tf
