@@ -8,3 +8,4 @@
 /cypress/*
 cypress.config.js
 Terraform/variables.tf
+.github/workflows/*
