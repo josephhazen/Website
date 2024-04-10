@@ -196,8 +196,6 @@ resource "aws_iam_role_policy_attachment" "attach" {
 }
 #LAMBDA FUNCTION
 resource "aws_lambda_function" "lambda" {
-  # If the file is not in the current working directory you will need to include a
-  # path.module in the filename.
   filename      = "${path.module}/../Backend/api.zip"
   function_name = "http_request_IP-DB"
   role          = aws_iam_role.role.arn
