@@ -70,6 +70,40 @@
 								</ul>
 							</form>
 						</article>
+						<script>
+							// Function to handle form submission
+							function submitForm(event) {
+								event.preventDefault();
+								
+								// Get form data
+								const formData = new FormData(document.getElementById('contactForm'));
+								const formObject = {};
+								formData.forEach((value, key) => { formObject[key] = value; });
+						
+								// Send form data to API Gateway endpoint
+								fetch('/your-api-endpoint', {
+									method: 'POST',
+									headers: {
+										'Content-Type': 'application/json'
+									},
+									body: JSON.stringify(formObject)
+								})
+								.then(response => {
+									if (response.ok) {
+										alert('Message sent successfully!');
+										document.getElementById('contactForm').reset();
+									} else {
+										throw new Error('Failed to send message');
+									}
+								})
+								.catch(error => {
+									console.error('Error:', error);
+									alert('Failed to send message. Please try again later.');
+								});
+							}
+						
+							document.getElementById('contactForm').addEventListener('submit', submitForm);
+						</script>
 						
 						<!-- Elements -->
 							<article id="elements">

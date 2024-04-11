@@ -296,6 +296,121 @@ resource "aws_api_gateway_stage" "stage" {
   deployment_id = aws_api_gateway_deployment.deployment.id
 }
 
+#Contact Form
+#LambdaRole
+#IAM for Lambda
+data "aws_iam_policy_document" "contactassume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "contactrole" {
+  name               = "contact lambda"
+  assume_role_policy = data.aws_iam_policy_document.contactassume_role.json
+}
+
+data "aws_iam_policy_document" "contactpolicydoc" {
+  statement {
+    effect    = "Allow"
+    sid = "SES"
+    actions   = [
+				"ses:SendEmail",
+			]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "contactpolicy" {
+  name        = "Contact lambda_policy"
+  description = "Contact Assume role policy"
+  policy      = data.aws_iam_policy_document.contactpolicydoc.json
+}
+
+resource "aws_iam_role_policy_attachment" "contactattach" {
+  role       = aws_iam_role.contactrole.name
+  policy_arn = aws_iam_policy.contactpolicy.arn
+}
+#Lambda
+resource "aws_lambda_function" "contactlambda" {
+  filename      = "${path.module}/../Backend/contact.zip"
+  function_name = "contact_form"
+  role          = aws_iam_role.role.arn
+  handler       = "api.lambda_handler"
+  runtime       = "python3.9"
+}
+resource "aws_lambda_permission" "trigger" {
+  statement_id  = "AllowExecutionFromAPI"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.contactlambda.function_name
+  principal     = "apigateway.amazonaws.com"
+}
+#API GW
+resource "aws_api_gateway_rest_api" "contactapi" {
+  name = "ContactAPIGW"
+}
+resource "aws_api_gateway_resource" "contactresource" {
+  rest_api_id = aws_api_gateway_rest_api.contactapi.id
+  parent_id   = aws_api_gateway_rest_api.contactapi.root_resource_id
+  path_part   = "{#contact+}"
+  
+}
+
+resource "aws_api_gateway_method" "contactmethod" {
+  rest_api_id   = aws_api_gateway_rest_api.contactapi.id
+  resource_id   = aws_api_gateway_resource.contactresource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "contactintegration" {
+  rest_api_id             = aws_api_gateway_rest_api.contactapi.id
+  resource_id             = aws_api_gateway_resource.contactresource.id
+  http_method             = aws_api_gateway_method.contactmethod.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.contactlambda.invoke_arn
+}
+
+resource "aws_api_gateway_method_response" "contactmethodresponse" {
+  rest_api_id = aws_api_gateway_rest_api.contactapi.id
+  resource_id = aws_api_gateway_resource.contactresource.id
+  http_method = aws_api_gateway_method.contactmethod.http_method
+  status_code = "200"
+  /*
+    lifecycle {
+    ignore_changes = all
+  }
+  */
+}
+
+resource "aws_api_gateway_integration_response" "contactintegrationresponse" {
+  rest_api_id = aws_api_gateway_rest_api.contactapi.id
+  resource_id = aws_api_gateway_resource.contactresource.id
+  http_method = aws_api_gateway_method.contactmethod.http_method
+  status_code = aws_api_gateway_method_response.contactmethodresponse.status_code
+  /*
+    lifecycle {
+    ignore_changes = all
+  }
+  */
+}
+
+resource "aws_api_gateway_deployment" "contactdeployment" {
+  rest_api_id = aws_api_gateway_rest_api.contactapi.id
+}
+resource "aws_api_gateway_stage" "contactstage" {
+  stage_name = "contactapiv1"
+  rest_api_id = aws_api_gateway_rest_api.contactapi.id
+  deployment_id = aws_api_gateway_deployment.contactdeployment.id
+}
 #CLOUDWATCH
 
 #SNS TOPIC
