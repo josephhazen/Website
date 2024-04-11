@@ -49,7 +49,7 @@
 						<!-- Contact -->
 						<article id="contact">
 							<h2 class="major">Contact</h2>
-							<form method="post" action="https://oumweow506.execute-api.us-east-1.amazonaws.com/contactapiv1">
+							<form id="contactForm" method="post" action="#">
 								<div class="fields">
 									<div class="field half">
 										<label for="name">Name</label>
@@ -81,7 +81,7 @@
 								formData.forEach((value, key) => { formObject[key] = value; });
 						
 								// Send form data to API Gateway endpoint
-								fetch('/your-api-endpoint', {
+								fetch('https://oumweow506.execute-api.us-east-1.amazonaws.com/contactapiv1/contact', {
 									method: 'POST',
 									headers: {
 										'Content-Type': 'application/json'
