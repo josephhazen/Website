@@ -313,7 +313,7 @@ data "aws_iam_policy_document" "contactassume_role" {
 }
 
 resource "aws_iam_role" "contactrole" {
-  name               = "contact lambda"
+  name               = "contact_lambda"
   assume_role_policy = data.aws_iam_policy_document.contactassume_role.json
 }
 
@@ -329,7 +329,7 @@ data "aws_iam_policy_document" "contactpolicydoc" {
 }
 
 resource "aws_iam_policy" "contactpolicy" {
-  name        = "Contact lambda_policy"
+  name        = "Contact_lambda_policy"
   description = "Contact Assume role policy"
   policy      = data.aws_iam_policy_document.contactpolicydoc.json
 }
@@ -342,11 +342,11 @@ resource "aws_iam_role_policy_attachment" "contactattach" {
 resource "aws_lambda_function" "contactlambda" {
   filename      = "${path.module}/../Backend/contact.zip"
   function_name = "contact_form"
-  role          = aws_iam_role.role.arn
-  handler       = "api.lambda_handler"
+  role          = aws_iam_role.contactrole.arn
+  handler       = "contact.lambda_handler"
   runtime       = "python3.9"
 }
-resource "aws_lambda_permission" "trigger" {
+resource "aws_lambda_permission" "contacttrigger" {
   statement_id  = "AllowExecutionFromAPI"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.contactlambda.function_name
@@ -359,7 +359,7 @@ resource "aws_api_gateway_rest_api" "contactapi" {
 resource "aws_api_gateway_resource" "contactresource" {
   rest_api_id = aws_api_gateway_rest_api.contactapi.id
   parent_id   = aws_api_gateway_rest_api.contactapi.root_resource_id
-  path_part   = "{#contact+}"
+  path_part   = "{contact+}"
   
 }
 
@@ -384,11 +384,9 @@ resource "aws_api_gateway_method_response" "contactmethodresponse" {
   resource_id = aws_api_gateway_resource.contactresource.id
   http_method = aws_api_gateway_method.contactmethod.http_method
   status_code = "200"
-  /*
     lifecycle {
     ignore_changes = all
   }
-  */
 }
 
 resource "aws_api_gateway_integration_response" "contactintegrationresponse" {
@@ -396,11 +394,9 @@ resource "aws_api_gateway_integration_response" "contactintegrationresponse" {
   resource_id = aws_api_gateway_resource.contactresource.id
   http_method = aws_api_gateway_method.contactmethod.http_method
   status_code = aws_api_gateway_method_response.contactmethodresponse.status_code
-  /*
     lifecycle {
     ignore_changes = all
   }
-  */
 }
 
 resource "aws_api_gateway_deployment" "contactdeployment" {
